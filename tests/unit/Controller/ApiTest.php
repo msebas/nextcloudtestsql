@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class ApiTest extends TestCase {
+	private const VALID_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
 	private IRequest $request;
 	private IDBConnection $connection;
 	private IAppConfig $appConfig;
@@ -29,8 +31,8 @@ final class ApiTest extends TestCase {
 	public function testExecutesParameterizedStatement(): void {
 		$sql = 'DELETE FROM *PREFIX*sd_entries WHERE user_id = ?';
 		$parameters = ['system-test-user'];
-		$this->configureRequest('test-key', $sql, $parameters);
-		$this->configureAccessKey('test-key');
+		$this->configureRequest(self::VALID_KEY, $sql, $parameters);
+		$this->configureAccessKey(self::VALID_KEY);
 		$this->connection
 			->expects($this->once())
 			->method('executeStatement')
@@ -49,8 +51,8 @@ final class ApiTest extends TestCase {
 		$rows = [
 			['appid' => 'nextcloudtestsql', 'configkey' => 'api_key'],
 		];
-		$this->configureRequest('test-key', $sql, $parameters);
-		$this->configureAccessKey('test-key');
+		$this->configureRequest(self::VALID_KEY, $sql, $parameters);
+		$this->configureAccessKey(self::VALID_KEY);
 
 		$result = $this->createMock(IResult::class);
 		$result
@@ -74,7 +76,7 @@ final class ApiTest extends TestCase {
 	}
 
 	public function testRejectsRequestWhenNoKeyIsConfigured(): void {
-		$this->configureRequest('test-key', 'DELETE FROM *PREFIX*sd_entries', []);
+		$this->configureRequest(self::VALID_KEY, 'DELETE FROM *PREFIX*sd_entries', []);
 		$this->configureAccessKey('');
 		$this->connection->expects($this->never())->method('executeStatement');
 
@@ -87,9 +89,34 @@ final class ApiTest extends TestCase {
 		);
 	}
 
+	#[DataProvider('invalidAccessKeyProvider')]
+	public function testRejectsRequestWhenConfiguredKeyLengthIsInvalid(string $key): void {
+		$this->configureRequest($key, 'DELETE FROM *PREFIX*sd_entries', []);
+		$this->configureAccessKey($key);
+		$this->connection->expects($this->never())->method('executeStatement');
+
+		$response = $this->controller()->execute();
+
+		$this->assertSame(Http::STATUS_SERVICE_UNAVAILABLE, $response->getStatus());
+		$this->assertSame(
+			['error' => 'SQL Debug is disabled because the access key is not 80 characters long.'],
+			$response->getData(),
+		);
+	}
+
+	/**
+	 * @return array<string, array{string}>
+	 */
+	public static function invalidAccessKeyProvider(): array {
+		return [
+			'too short' => [str_repeat('a', ApiController::ACCESS_KEY_LENGTH - 1)],
+			'too long' => [str_repeat('a', ApiController::ACCESS_KEY_LENGTH + 1)],
+		];
+	}
+
 	public function testRejectsWrongKey(): void {
-		$this->configureRequest('wrong-key', 'DELETE FROM *PREFIX*sd_entries', []);
-		$this->configureAccessKey('test-key');
+		$this->configureRequest(str_repeat('f', ApiController::ACCESS_KEY_LENGTH), 'DELETE FROM *PREFIX*sd_entries', []);
+		$this->configureAccessKey(self::VALID_KEY);
 		$this->connection->expects($this->never())->method('executeStatement');
 
 		$response = $this->controller()->execute();
@@ -103,7 +130,7 @@ final class ApiTest extends TestCase {
 
 	public function testRejectsMissingKey(): void {
 		$this->configureRequest('', 'DELETE FROM *PREFIX*sd_entries', []);
-		$this->configureAccessKey('test-key');
+		$this->configureAccessKey(self::VALID_KEY);
 		$this->connection->expects($this->never())->method('executeStatement');
 
 		$response = $this->controller()->execute();
@@ -121,8 +148,8 @@ final class ApiTest extends TestCase {
 		mixed $parameters,
 		string $expectedError,
 	): void {
-		$this->configureRequest('test-key', $sql, $parameters);
-		$this->configureAccessKey('test-key');
+		$this->configureRequest(self::VALID_KEY, $sql, $parameters);
+		$this->configureAccessKey(self::VALID_KEY);
 		$this->connection->expects($this->never())->method('executeStatement');
 
 		$response = $this->controller()->execute();
@@ -166,8 +193,8 @@ final class ApiTest extends TestCase {
 
 	public function testReturnsDatabaseErrorWithoutExecutingAnotherStatement(): void {
 		$sql = 'DELETE INVALID SQL';
-		$this->configureRequest('test-key', $sql, []);
-		$this->configureAccessKey('test-key');
+		$this->configureRequest(self::VALID_KEY, $sql, []);
+		$this->configureAccessKey(self::VALID_KEY);
 		$this->connection
 			->expects($this->once())
 			->method('executeStatement')
@@ -185,8 +212,8 @@ final class ApiTest extends TestCase {
 
 	public function testSelectReturnsDatabaseError(): void {
 		$sql = 'SELECT INVALID SQL';
-		$this->configureRequest('test-key', $sql, []);
-		$this->configureAccessKey('test-key');
+		$this->configureRequest(self::VALID_KEY, $sql, []);
+		$this->configureAccessKey(self::VALID_KEY);
 		$this->connection
 			->expects($this->once())
 			->method('executeQuery')

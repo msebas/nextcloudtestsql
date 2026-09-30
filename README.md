@@ -20,7 +20,7 @@ php occ config:app:set nextcloudtestsql api_key \
 	--sensitive
 ```
 
-Keep `SQL_DEBUG_KEY` in the test runner and send it in the `X-SQL-Debug-Key` header. When `api_key` is absent or empty, both endpoints are disabled. The sensitive flag prevents the key from appearing in normal configuration listings.
+Keep `SQL_DEBUG_KEY` in the test runner and send it in the `X-SQL-Debug-Key` header. The configured key must contain exactly 80 characters; `openssl rand -hex 40` creates a key of that length. When `api_key` is absent or has another length, both endpoints are disabled. The sensitive flag prevents the key from appearing in normal configuration listings.
 
 While the app is enabled, Nextcloud's Administration overview permanently reports a security warning explaining that the app must not be used in production.
 

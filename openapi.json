@@ -13,7 +13,8 @@
             "sql_debug_key": {
                 "type": "apiKey",
                 "in": "header",
-                "name": "X-SQL-Debug-Key"
+                "name": "X-SQL-Debug-Key",
+                "description": "The configured 80-character per-container access key."
             }
         },
         "schemas": {
@@ -140,7 +141,7 @@
                         }
                     },
                     "503": {
-                        "description": "No access key is configured",
+                        "description": "No valid 80-character access key is configured",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -204,7 +205,7 @@
                         }
                     },
                     "503": {
-                        "description": "No access key is configured",
+                        "description": "No valid 80-character access key is configured",
                         "content": {
                             "application/json": {
                                 "schema": {

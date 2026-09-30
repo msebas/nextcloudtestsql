@@ -5,6 +5,11 @@ set -euo pipefail
 : "${NEXTCLOUD_URL:?Set NEXTCLOUD_URL to the Nextcloud base URL}"
 : "${SQL_DEBUG_KEY:?Set SQL_DEBUG_KEY to the configured app key}"
 
+if (( ${#SQL_DEBUG_KEY} != 80 )); then
+	printf 'SQL_DEBUG_KEY must contain exactly 80 characters.\n' >&2
+	exit 1
+fi
+
 execute_endpoint="${NEXTCLOUD_URL%/}/index.php/apps/nextcloudtestsql/api/v1/execute"
 execute_request_body='{"sql":"DELETE FROM *PREFIX*appconfig WHERE appid = ? AND configkey = ?","parameters":["nextcloudtestsql_integration_test","never-created"]}'
 select_endpoint="${NEXTCLOUD_URL%/}/index.php/apps/nextcloudtestsql/api/v1/select"
