@@ -13,7 +13,7 @@ Mount or copy this directory into a Nextcloud app directory, then enable it and 
 
 ```sh
 php occ app:enable nextcloudtestsql
-SQL_DEBUG_KEY="$(openssl rand -hex 32)"
+SQL_DEBUG_KEY="$(openssl rand -hex 40)"
 php occ config:app:set nextcloudtestsql api_key \
 	--value="${SQL_DEBUG_KEY}" \
 	--type=string \
