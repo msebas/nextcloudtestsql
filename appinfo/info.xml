@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>nextcloudtestsql</id>
+	<name>Nextcloud Test SQL</name>
+	<summary>DANGEROUS test-only app that exposes parameterized SQL over HTTP</summary>
+	<description># DANGER: NEVER USE IN PRODUCTION
+
+Nextcloud Test SQL exposes HTTP endpoints that can read or make arbitrary changes to the Nextcloud database. It is exclusively intended for disposable end-to-end test containers.
+
+Requests require a per-container access key configured through `occ config:app:set`. Enabling this app on a production system can cause data loss or complete compromise of the Nextcloud database.</description>
+	<version>1.0.0</version>
+	<licence>AGPL-3.0-or-later</licence>
+	<author mail="sebastian.mueller@mcservice.de">Sebastian Müller</author>
+	<namespace>NextcloudTestSql</namespace>
+	<category>tools</category>
+	<bugs>https://github.com/msebas</bugs>
+	<dependencies>
+		<nextcloud min-version="33" max-version="35"/>
+	</dependencies>
+</info>

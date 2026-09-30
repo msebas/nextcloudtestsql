@@ -1,0 +1,221 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Nextcloud Test SQL",
+        "version": "1.0.0",
+        "description": "Dangerous test-only API for executing parameterized SQL statements against a disposable Nextcloud database.",
+        "license": {
+            "name": "AGPL-3.0-or-later"
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sql_debug_key": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-SQL-Debug-Key"
+            }
+        },
+        "schemas": {
+            "ExecuteRequest": {
+                "type": "object",
+                "required": [
+                    "sql"
+                ],
+                "properties": {
+                    "sql": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "parameters": {
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "nullable": true,
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "ExecuteResponse": {
+                "type": "object",
+                "required": [
+                    "affectedRows"
+                ],
+                "properties": {
+                    "affectedRows": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                }
+            },
+            "SelectResponse": {
+                "type": "object",
+                "required": [
+                    "rows"
+                ],
+                "properties": {
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "required": [
+                    "error"
+                ],
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/index.php/apps/nextcloudtestsql/api/v1/execute": {
+            "post": {
+                "operationId": "executeSql",
+                "summary": "Execute one parameterized SQL statement",
+                "description": "Executes one statement through Nextcloud's IDBConnection. This endpoint is exclusively for disposable test instances.",
+                "security": [
+                    {
+                        "sql_debug_key": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExecuteRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Statement executed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExecuteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request or SQL is invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Access key is missing or invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "No access key is configured",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/index.php/apps/nextcloudtestsql/api/v1/select": {
+            "post": {
+                "operationId": "selectSql",
+                "summary": "Execute one parameterized SQL query",
+                "description": "Executes one query through Nextcloud's IDBConnection and returns all rows. This endpoint is exclusively for disposable test instances.",
+                "security": [
+                    {
+                        "sql_debug_key": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExecuteRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Query executed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SelectResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Request or SQL is invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Access key is missing or invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "No access key is configured",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": []
+}
